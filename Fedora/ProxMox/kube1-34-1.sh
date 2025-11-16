@@ -9,7 +9,9 @@ set -euo pipefail
 dnf -y update
 dnf -y install \
   curl wget vim tar socat conntrack iptables iproute nvme-cli \
-  chrony e2fsprogs cloud-init qemu-guest-agent
+  chrony e2fsprogs cloud-init 
+
+dnf -y install qemu-guest-agent-2:10.1.0-7.fc43.x86_64
 
 systemctl enable chronyd
 systemctl enable qemu-guest-agent
