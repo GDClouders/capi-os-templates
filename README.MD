@@ -11,6 +11,9 @@ This repository contains per-OS setup scripts (Fedora, Ubuntu, Arch, etc.) desig
 ├── Fedora
 │   └── ProxMox
 │       └── kube1-34-1.sh
+├── Arch
+│   └── ProxMox
+│       └── kube1-34-1.sh
 ├── LICENSE
 └── README.MD
 ```
