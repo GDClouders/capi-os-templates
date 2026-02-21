@@ -18,7 +18,7 @@ echo "[INFO] Installing qemu-guest-agent..."
 
 wget https://archive.archlinux.org/packages/q/qemu-guest-agent/qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
 pacman -U  --needed --noconfirm qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
-rm *.zst.*
+rm *.zst
 
 echo "[INFO] Enabling base services..."
 systemctl enable chronyd
@@ -85,7 +85,7 @@ pacman -U  --needed --noconfirm --ask 4 \
   kubeadm-1.34.0-1-x86_64.pkg.tar.zst \
   kubectl-1.34.0-1-x86_64.pkg.tar.zst
 
-rm *.zst.*
+rm *.zst
 systemctl enable kubelet
 
 echo "[INFO] Cleaning image for template..."
