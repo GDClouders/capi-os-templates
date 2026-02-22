@@ -1,16 +1,19 @@
 #!/bin/bash
 # Works on:
-# - Fedora-Cloud-Base-AmazonEC2-42-1.1.x86_64.raw
-# - Fedora-Cloud-Base-AmazonEC2-43-1.6.x86_64.raw
+# - Arch Linux Cloud Images (es. Amazon EC2 / KVM)
 
 set -euo pipefail
 
 echo "[INFO] Updating packages..."
-pacman -Syy
+pacman -Syu
+
+pacman-key --populate archlinux
+pacman-key --refresh-keys
+pacman -Sy archlinux-keyring
 
 echo "[INFO] Installing base packages..."
 pacman -S --needed --noconfirm \
-  curl wget vim tar socat conntrack-tools iptables iproute2 nvme-cli \
+  curl wget vim tar socat conntrack-tools iptables-nft iproute2 nvme-cli \
   chrony e2fsprogs cloud-init
 
 # Pin qemu-guest-agent version for stability
@@ -26,7 +29,7 @@ systemctl enable qemu-guest-agent
 systemctl enable cloud-init
 
 echo "[INFO] Installing containerd..."
-pacman -S --needed --noconfirm containerd
+pacman -S --needed --noconfirm containerd runc
 mkdir -p /etc/containerd
 containerd config default > /etc/containerd/config.toml
 # Configure SystemdCgroup for kubelet
@@ -37,11 +40,11 @@ echo "[INFO] Disabling swap and ZRAM..."
 swapoff -a || true
 sed -i '/swap/d' /etc/fstab
 # Remove ZRAM if present
-if systemctl is-active --quiet swap-create@zram0 2>/dev/null; then
-    systemctl stop swap-create@zram0
+if systemctl is-active --quiet systemd-zram-setup@zram0.service 2>/dev/null; then
+    systemctl stop systemd-zram-setup@zram0.service
 fi
-if pacman -Q zram-generator &>/dev/null; then
-   pacman -R zram-generator
+if pacman -Qs zram-generator > /dev/null; then
+    pacman -Rs --noconfirm zram-generator
 fi
 
 echo "[INFO] Configuring kernel modules and sysctl..."
@@ -66,14 +69,13 @@ EOF
 sysctl --system
 
 # Enable NVMe multipath for remote storage
-GRUB_CMDLINE_PARAM="nvme_core.multipath=Y"
-sed -i "s/\(GRUB_CMDLINE_LINUX_DEFAULT=[V'\"].*\)\([V'\"]\)/\1 $GRUB_CMDLINE_PARAM\2/" /etc/default/grub
-grub-mkconfig -o /boot/grub/grub.cfg
-
-
-wget https://archive.archlinux.org/packages/q/qemu-guest-agent/qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
-pacman -U  --needed --noconfirm qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
-rm qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
+if [ -f /etc/default/grub ]; then
+    GRUB_CMDLINE_PARAM="nvme_core.multipath=Y"
+    sed -i "s/\(GRUB_CMDLINE_LINUX_DEFAULT=[V'\"].*\)\([V'\"]\)/\1 $GRUB_CMDLINE_PARAM\2/" /etc/default/grub
+    grub-mkconfig -o /boot/grub/grub.cfg
+else
+    echo "[WARNING] /etc/default/grub not found. If using systemd-boot, update kernel args manually."
+fi
 
 
 echo "[INFO] Installing kubeadm, kubelet, kubectl (version 1.34.0)..."
@@ -84,7 +86,6 @@ pacman -U  --needed --noconfirm --ask 4 \
   kubelet-1.34.0-1-x86_64.pkg.tar.zst \
   kubeadm-1.34.0-1-x86_64.pkg.tar.zst \
   kubectl-1.34.0-1-x86_64.pkg.tar.zst
-
 rm *.zst
 systemctl enable kubelet
 
