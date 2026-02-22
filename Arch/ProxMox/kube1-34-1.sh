@@ -117,5 +117,4 @@ echo "[SUCCESS] Preparation completed!"
 echo "[INFO] Shutting down in 5 seconds..."
 sleep 5
 
-history -c && history -w
 shutdown -h now
