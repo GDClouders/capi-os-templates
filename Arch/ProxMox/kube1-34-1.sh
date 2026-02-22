@@ -5,11 +5,11 @@
 set -euo pipefail
 
 echo "[INFO] Updating packages..."
-pacman -Syu
+pacman -Syu --noconfirm # <-- Aggiunto --noconfirm
 
 pacman-key --populate archlinux
 pacman-key --refresh-keys
-pacman -Sy archlinux-keyring
+pacman -Sy --noconfirm archlinux-keyring
 
 echo "[INFO] Installing base packages..."
 pacman -S --needed --noconfirm \
@@ -18,10 +18,9 @@ pacman -S --needed --noconfirm \
 
 # Pin qemu-guest-agent version for stability
 echo "[INFO] Installing qemu-guest-agent..."
-
 wget https://archive.archlinux.org/packages/q/qemu-guest-agent/qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
 pacman -U  --needed --noconfirm qemu-guest-agent-10.0.0-7-x86_64.pkg.tar.zst
-rm *.zst
+rm qemu-guest-agent*.zst
 
 echo "[INFO] Enabling base services..."
 systemctl enable chronyd
@@ -71,23 +70,25 @@ sysctl --system
 # Enable NVMe multipath for remote storage
 if [ -f /etc/default/grub ]; then
     GRUB_CMDLINE_PARAM="nvme_core.multipath=Y"
-    sed -i "s/\(GRUB_CMDLINE_LINUX_DEFAULT=[V'\"].*\)\([V'\"]\)/\1 $GRUB_CMDLINE_PARAM\2/" /etc/default/grub
+    sed -i "s/\(GRUB_CMDLINE_LINUX_DEFAULT=['\"]\)/\1$GRUB_CMDLINE_PARAM /" /etc/default/grub
     grub-mkconfig -o /boot/grub/grub.cfg
 else
     echo "[WARNING] /etc/default/grub not found. If using systemd-boot, update kernel args manually."
 fi
 
-
 echo "[INFO] Installing kubeadm, kubelet, kubectl (version 1.34.0)..."
 wget https://archive.archlinux.org/packages/k/kubelet/kubelet-1.34.0-1-x86_64.pkg.tar.zst
 wget https://archive.archlinux.org/packages/k/kubeadm/kubeadm-1.34.0-1-x86_64.pkg.tar.zst
 wget https://archive.archlinux.org/packages/k/kubectl/kubectl-1.34.0-1-x86_64.pkg.tar.zst
-pacman -U  --needed --noconfirm --ask 4 \
+pacman -U --needed --noconfirm --ask 4 \
   kubelet-1.34.0-1-x86_64.pkg.tar.zst \
   kubeadm-1.34.0-1-x86_64.pkg.tar.zst \
   kubectl-1.34.0-1-x86_64.pkg.tar.zst
-rm *.zst
+rm kube*.zst # <-- Reso il rm più specifico
 systemctl enable kubelet
+
+echo "[INFO] Pinning versions in pacman.conf..."
+sed -i 's/^#IgnorePkg.*/IgnorePkg = kubelet kubeadm kubectl qemu-guest-agent/' /etc/pacman.conf
 
 echo "[INFO] Cleaning image for template..."
 yes | pacman -Scc
