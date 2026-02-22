@@ -24,7 +24,6 @@ rm qemu-guest-agent*.zst
 
 echo "[INFO] Enabling base services..."
 systemctl enable chronyd
-systemctl enable qemu-guest-agent
 systemctl enable cloud-init
 
 echo "[INFO] Installing containerd..."
