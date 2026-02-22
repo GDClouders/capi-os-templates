@@ -29,7 +29,7 @@ systemctl enable cloud-init-local.service \
                  cloud-init-main.service \
                  cloud-config.service \
                  cloud-final.service
-                 
+
 echo "[INFO] Installing containerd..."
 pacman -S --needed --noconfirm containerd runc
 mkdir -p /etc/containerd
@@ -94,8 +94,10 @@ echo "[INFO] Pinning versions in pacman.conf..."
 sed -i 's/^#IgnorePkg.*/IgnorePkg = kubelet kubeadm kubectl qemu-guest-agent/' /etc/pacman.conf
 
 echo "[INFO] Cleaning image for template..."
-yes | pacman -Scc
 rm -rf /var/cache/pacman/pkg/*
+
+yes | pacman -Scc || true
+
 rm -f /etc/ssh/ssh_host_*
 rm -f /root/.bash_history
 cloud-init clean --logs --seed
