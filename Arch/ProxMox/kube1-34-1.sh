@@ -7,12 +7,12 @@ set -euo pipefail
 echo "[INFO] Updating packages..."
 pacman -Syu --noconfirm # <-- Aggiunto --noconfirm
 
-pacman-key --populate archlinux
-pacman-key --refresh-keys
-pacman -Sy --noconfirm archlinux-keyring
+# pacman-key --populate archlinux
+# pacman-key --refresh-keys
+# pacman -Sy --noconfirm archlinux-keyring
 
 echo "[INFO] Installing base packages..."
-pacman -S --needed --noconfirm \
+pacman -S --needed --noconfirm --ask 4 \
   curl wget vim tar socat conntrack-tools iptables-nft iproute2 nvme-cli \
   chrony e2fsprogs cloud-init
 
