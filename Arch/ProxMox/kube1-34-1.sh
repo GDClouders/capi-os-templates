@@ -87,7 +87,7 @@ pacman -U --needed --noconfirm --ask 4 \
   kubelet-1.34.0-1-x86_64.pkg.tar.zst \
   kubeadm-1.34.0-1-x86_64.pkg.tar.zst \
   kubectl-1.34.0-1-x86_64.pkg.tar.zst
-rm kube*.zst # <-- Reso il rm più specifico
+rm kube*.zst
 systemctl enable kubelet
 
 echo "[INFO] Pinning versions in pacman.conf..."
