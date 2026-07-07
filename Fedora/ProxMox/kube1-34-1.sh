@@ -59,6 +59,16 @@ net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1
 EOF
 
+
+
+cat <<EOF > /etc/sysctl.d/k8s.conf
+fs.inotify.max_user_instances=8192
+fs.inotify.max_user_watches=1048576
+fs.inotify.max_queued_events=32768
+EOF
+
+sysctl --system
+
 # Apply sysctl settings
 sysctl --system
 
