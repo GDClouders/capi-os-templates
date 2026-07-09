@@ -13,6 +13,20 @@ dnf -y install \
   curl wget vim tar socat conntrack iptables iproute nvme-cli \
   chrony e2fsprogs cloud-init
 
+
+
+echo "[INFO] Installing ISCSI packages..."
+sudo yum install -y lsscsi iscsi-initiator-utils sg3_utils device-mapper-multipath
+# Enable multipathing
+sudo mpathconf --enable --with_multipathd y
+# Ensure that iscsid and multipathd are running
+sudo systemctl enable iscsid multipathd
+sudo systemctl start iscsid multipathd
+# Start and enable iscsi
+sudo systemctl enable iscsi
+sudo systemctl start iscsi
+
+
 # Pin qemu-guest-agent version for stability
 echo "[INFO] Installing qemu-guest-agent..."
 dnf install -y qemu-guest-agent-2:10.2.2-1.fc44.x86_64 
