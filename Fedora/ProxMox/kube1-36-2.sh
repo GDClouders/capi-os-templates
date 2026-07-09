@@ -15,7 +15,7 @@ dnf -y install \
 
 # Pin qemu-guest-agent version for stability
 echo "[INFO] Installing qemu-guest-agent..."
-dnf -y qemu-guest-agent-2:10.2.2-1.fc44.x86_64 
+dnf install -y qemu-guest-agent-2:10.2.2-1.fc44.x86_64 
 
 echo "[INFO] Disabling firewalld to let Kubernetes handle iptables..."
 if systemctl is-enabled firewalld &>/dev/null; then
@@ -26,7 +26,9 @@ fi
 echo "[INFO] Enabling base services..."
 systemctl enable chronyd
 systemctl enable qemu-guest-agent
-systemctl enable cloud-init
+systemctl enable cloud-final        
+systemctl enable cloud-init-local   
+systemctl enable cloud-init-network 
 
 echo "[INFO] Installing containerd..."
 dnf -y install containerd
