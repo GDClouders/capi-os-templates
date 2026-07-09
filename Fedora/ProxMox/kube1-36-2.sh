@@ -113,6 +113,8 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v1.36/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 
+dnf -y install runc
+
 echo "[INFO] Installing kubeadm, kubelet, kubectl (version 1.36.0)..."
 dnf -y install --disableexcludes=kubernetes \
   kubelet-1.36.2\
